@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-sanitize/1.8.2/angular-sanitize.min.js" integrity="sha512-JkCv2gG5E746DSy2JQlYUJUcw9mT0vyre2KxE2ZuDjNfqG90Bi7GhcHUjLQ2VIAF1QVsY5JMwA1+bjjU5Omabw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<body>
+
+    <script>
+        var app = angular.module("blogSystem", ['ngSanitize']);
+        app.controller("blogListController", function ($scope, $http) {
+
+            $scope.pageNumber = 1;
+            // `https://api.github.com/users/rizwan3d/gists?per_page=10&page=${$scope.pageNumber}`
+
+            $scope.loadNext = () => {
+                $scope.pageNumber++;
+                $scope.getFromGitHub();
+            }
+
+            $scope.loadPrevious = () => {
+                $scope.pageNumber--;
+                $scope.getFromGitHub();
+            }
+
+            $scope.getFromGitHub = () => {
+                $http({
+                    method: "GET",
+                    url: `https://api.github.com/gists?per_page=10&page=${$scope.pageNumber}`
+                }).then(function mySuccess(response) {
+                    $scope.blogList = response.data;
+                }, function myError(response) {
+
+                });
+            }
+
+            $scope.loadOneDate = (url) => {
+                $http({
+                    method: "GET",
+                    url: 'https://api.github.com/gists/f7383498c912b32169731c63f4edb09b'
+                }).then(function mySuccess(response) {
+                    var $data = response.data.files;
+                    var keys = Object.keys($data);
+                    $scope.blogData =  $data[keys[0]].content;
+                }, function myError(response) {
+                });
+            }
+            $scope.getFromGitHub();
+        });
+    </script>
+
+    <div ng-app="blogSystem" ng-controller="blogListController">
+        <ul>
+            <li ng-repeat="x in blogList" ng-click="loadOneDate(x.url)">
+                <a href="#/">{{x.description}}</a>
+            </li>
+        </ul>
+        <a href="#/" ng-if="pageNumber > 1" ng-click="loadPrevious()"> << Previous</a>
+        <a href="#/" ng-click="loadNext()">Next >></a>
+
+        <div ng-bind-html="blogData">
+        </div>
+    </div>
+
+
+</body>
+
+</html>
